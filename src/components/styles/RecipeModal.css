@@ -7,7 +7,8 @@
     width: 100vw;
     height: 100dvh;
     z-index: 4;
-    justify-content: center;       /* horizontal center */
+    /* justify-content: center;       horizontal center */
+    flex-direction: column;
     align-items: center;           /* vertical center */
     overflow: auto;
     
@@ -24,10 +25,10 @@
     position: relative;
     width: 90%;
     max-width: 700px;
-    margin: 0 auto;
+    margin: 30px auto 0;
     /* min-height: ; */
     /* max-height: 90vh; */
-    overflow-y: auto;
+    /* overflow-y: auto; */
     padding: 1.5rem;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0,0,0,0.25);

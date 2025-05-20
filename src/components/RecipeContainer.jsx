@@ -44,7 +44,7 @@ export default class RecipeContainer extends Component {
 
     fetchRandomRecipe = async () => {
         try {
-            // this.setState({filter: '',loading: true});
+            this.setState({filter: '',loading: true});
             const randomRecipes = await fetchRandomRecipeData();
             this.setState({recipes: randomRecipes});
         } catch (err) {
