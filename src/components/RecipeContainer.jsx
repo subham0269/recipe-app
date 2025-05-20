@@ -3,6 +3,9 @@ import './styles/RecipeContainer.css';
 import RecipeCard from "./RecipeCard";
 import { fetchRandomRecipeData, fetchFilteredRecipe, fetchSearchedRecipe } from "../utils/fetchData";
 import FilterDropdown from "./FilteredDropdown";
+import RecipeModal from "./RecipeModal";
+import { addToLocalStorage, fetchFromLocalStorage, removeFromLocal } from "../utils/storage";
+import FavCard from "./FavouriteCard";
 
 export default class RecipeContainer extends Component {
     constructor(props) {
@@ -10,13 +13,38 @@ export default class RecipeContainer extends Component {
         this.state = {
             recipes: [],
             filter: '',
-            loading: true
+            lookup: 0,
+            loading: true,
+            favourites: [],
         }
+    }
+    // updateFavFlagOnRecipies = () => {
+    //     const idOnFavList = this.state.favourites.map(a => a.id);
+    //     const updatedList = this.state.recipes.map(a =>
+    //         idOnFavList.some(ob => ob === a.idMeal) ? {...a, isFav: true} : a
+    //     );
+
+    //     console.log(updatedList);
+    //     this.setState({ recipes: updatedList });
+    // }
+
+    updateFavListOnMount = (ex) => {
+        this.setState({favourites: ex});
+    }
+    AddFavRecipe = (id, name, img) => {
+        const favList = addToLocalStorage(id, name, img);
+        this.setState({favourites: favList});
+        // this.updateFavFlagOnRecipies();
+    }
+
+    removeFavRecipe = (id) => {
+        const updateFav = removeFromLocal(id);
+        this.setState({favourites: updateFav})
     }
 
     fetchRandomRecipe = async () => {
         try {
-            this.setState({filter: '',loading: true});
+            // this.setState({filter: '',loading: true});
             const randomRecipes = await fetchRandomRecipeData();
             this.setState({recipes: randomRecipes});
         } catch (err) {
@@ -38,6 +66,10 @@ export default class RecipeContainer extends Component {
         }
     }
 
+    lookupForRecipe = (id) => {
+        this.setState({lookup: id});
+    }
+
     loadNewRandomRecipes = () => {
         this.fetchRandomRecipe();
     }
@@ -47,12 +79,16 @@ export default class RecipeContainer extends Component {
             this.setState({loading: true});
             // console.log('changed')
             const res = await fetchFilteredRecipe(this.state.filter);
-            this.setState({recipes: res.meals});
+            this.setState({recipes: res.meals}, this.updateFavFlagOnRecipies);
         } catch (err) {
             console.log('error fetching filtered list', err);
         } finally {
             this.setState({loading: false})
         }
+    }
+
+    removeRecipeId = () => {
+        this.setState({lookup: 0});
     }
     
     updateFilter = (str) => {
@@ -62,6 +98,9 @@ export default class RecipeContainer extends Component {
     componentDidMount() {
         console.log('component did mount');
         this.fetchRandomRecipe();
+        const existingFavList = fetchFromLocalStorage();
+        this.updateFavListOnMount(existingFavList);
+
     }
 
     componentDidUpdate(prevProps, prevState) {
@@ -69,16 +108,21 @@ export default class RecipeContainer extends Component {
             console.log('changed')
             this.loadSearchedRecipe(this.props.searchedRecipe);
         }
-        if (prevState.filter !== this.state.filter) this.loadRecipeAccordingToFilter()
+        if (prevState.filter !== this.state.filter) this.loadRecipeAccordingToFilter();
     }
 
     render() {
-        const {recipes, loading} = this.state;
+        const {recipes, lookup, loading, favourites} = this.state;
 
+        console.log(this.state.filter);
+        
         return (
             <div id="recipe-container">
+                <div className="fav-container">
+                    {favourites?.map((e,i) => <FavCard key={i} removeFav={this.removeFavRecipe} {...e} />)}
+                </div>
                 <div id="filter-controls">
-                    <FilterDropdown isLoading={loading} onFilterUpdate={this.updateFilter} />
+                    <FilterDropdown currFilter={this.state.filter} isLoading={loading} onFilterUpdate={this.updateFilter} />
                     <button id="load-rec-btn" onClick={this.loadNewRandomRecipes} disabled={loading} >Load New Recipes</button>
                     {/* <button onClick={this.loadRecipeAccordingToFilter}>Filter</button> */}
                 </div>
@@ -87,11 +131,24 @@ export default class RecipeContainer extends Component {
                     : 
                     recipes ? 
                     <ul id="recipe-grid-container">
-                    {recipes.map((recipe, index) => <RecipeCard key={index} name={recipe.strMeal} imgLink={recipe.strMealThumb} />)}
+                        {recipes.map((recipe, index) => 
+                        <RecipeCard 
+                            isFav={favourites.some(a => a.id === recipe.idMeal)}
+                            // id={recipe.idMeal}
+                            handleModal={this.lookupForRecipe}
+                            toggleFav={this.AddFavRecipe} 
+                            key={index}
+                            {...recipe}
+                            // name={recipe.strMeal}
+                            // imgLink={recipe.strMealThumb} 
+                        />)}
+                        {/* <hgdhgj></hgdhgj> */}
                     </ul>
                     :
-                    <div>No recipes found</div>
+                    <div id="not-found">No recipes found</div>
                     }
+
+                <RecipeModal removeId={this.removeRecipeId} recipeId={lookup} />
             </div>
         )
     }

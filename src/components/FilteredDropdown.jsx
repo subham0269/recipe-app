@@ -7,7 +7,7 @@ export default class FilterDropdown extends Component {
         super(props);
         this.state = {
             filterList: [],
-            filter: '',
+            filter: props.currFilter,
             loading: true
         }
     }
@@ -34,13 +34,18 @@ export default class FilterDropdown extends Component {
         this.fetchRecipeFilters();
     }
 
+    shouldComponentUpdate(nextProps) {
+        console.log(nextProps.currFilter, this.state.filter);
+        return true;
+    }
+
     render() {
 
         const { filter, filterList, loading } = this.state;
 
         return (
-            <select value={filter} onChange={this.handleChange} disabled={loading}>
-                <option name="" selected>All Recipies</option>
+            <select value={filter} defaultValue={'all'} onChange={this.handleChange} disabled={loading}>
+                <option name="all">All Recipies</option>
                 {filterList.map((name,i) => <option key={i} value={name.strArea}>{`${name.strArea} Recipes`}</option>)}
             </select>
         )

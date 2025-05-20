@@ -54,3 +54,13 @@ select {
         transform: rotate(.5turn);
     }
 }
+
+
+
+#not-found {
+    /* background-color: antiquewhite; */
+    margin: 0 auto;
+    width: fit-content;
+    font-size: 1.7rem;
+    color:lightslategray;
+}

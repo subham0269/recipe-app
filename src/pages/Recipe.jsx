@@ -10,6 +10,7 @@ export class RecipeApp extends Component {
             search: '',
         }
         this.handleSearchUpdate = this.handleSearchUpdate.bind(this);
+        
     }
 
     handleSearchUpdate(searchString) {
@@ -17,8 +18,6 @@ export class RecipeApp extends Component {
     }
     
     render() {
-        console.log('render parent');
-        console.log('parent state', this.state.search);
         return (
             <main>
                 <Navbar onSearchUpdate = {this.handleSearchUpdate} />

@@ -40,6 +40,16 @@ export const fetchSearchedRecipe = async (search) => {
 }
 
 
+export const fetchLookupRecipe = async (id) => {
+    try {
+        const responses = await fetch(`https://www.themealdb.com/api/json/v1/1/lookup.php?i=${id}`).then(res => res.json());
+        // console.log(responses.meals[0]);
+        return responses.meals[0];
+    } catch (err) {
+        console.log('error while fetching recipe lookup from api', err)
+    }
+}
+
 // const 
 
 
