@@ -4,20 +4,20 @@ export const fetchFromLocalStorage =  () => {
 }
 
 
-export const addToLocalStorage = (...obj) => {
-    console.log(obj);
-    const newObj = {
-        id: obj[0],
-        name: obj[1],
-        img: obj[2]
-    };
+export const addToLocalStorage = obj => {
+    console.log('utils storage',obj);
+    // const newObj = {
+    //     id: obj.id,
+    //     name: obj.name,
+    //     img: obj.img
+    // };
     let prev = fetchFromLocalStorage();
 
     // console.log(!prev.some(ob => ob.id !== newObj.id));
     // if (prev.length === 0)
     //     prev.push(newObj);
-    if (!prev.some(ob => ob.id === newObj.id)) {
-        prev.push(newObj);
+    if (!prev.some(ob => ob.id === obj.id)) {
+        prev.push(obj);
         localStorage.setItem('fav', JSON.stringify(prev));
     }
     return prev;

@@ -4,10 +4,26 @@ import RecipeCard from "./RecipeCard";
 import { fetchRandomRecipeData, fetchFilteredRecipe, fetchSearchedRecipe } from "../utils/fetchData";
 import FilterDropdown from "./FilteredDropdown";
 import RecipeModal from "./RecipeModal";
-import { addToLocalStorage, fetchFromLocalStorage, removeFromLocal } from "../utils/storage";
 import FavCard from "./FavouriteCard";
+import { connect } from "react-redux";
+import { addToFavAction, RemoveFromFavAction } from "../actions/actions";
+import { fetchMeals } from "../actions/mealAction";
 
-export default class RecipeContainer extends Component {
+
+const mapStateToProps = state => {
+    return {
+        favList: state.favList,
+        meals: state.meals
+    }
+}
+
+const mapDispatchToProps = {
+    fetchMeals,
+    addToFavAction,
+    RemoveFromFavAction
+}
+
+class RecipeContainer extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -15,31 +31,15 @@ export default class RecipeContainer extends Component {
             filter: '',
             lookup: 0,
             loading: true,
-            favourites: [],
         }
     }
-    // updateFavFlagOnRecipies = () => {
-    //     const idOnFavList = this.state.favourites.map(a => a.id);
-    //     const updatedList = this.state.recipes.map(a =>
-    //         idOnFavList.some(ob => ob === a.idMeal) ? {...a, isFav: true} : a
-    //     );
 
-    //     console.log(updatedList);
-    //     this.setState({ recipes: updatedList });
-    // }
-
-    updateFavListOnMount = (ex) => {
-        this.setState({favourites: ex});
-    }
     AddFavRecipe = (id, name, img) => {
-        const favList = addToLocalStorage(id, name, img);
-        this.setState({favourites: favList});
-        // this.updateFavFlagOnRecipies();
+        this.props.addToFavAction({id, name, img});
     }
 
     removeFavRecipe = (id) => {
-        const updateFav = removeFromLocal(id);
-        this.setState({favourites: updateFav})
+        this.props.RemoveFromFavAction(id);
     }
 
     fetchRandomRecipe = async () => {
@@ -71,7 +71,10 @@ export default class RecipeContainer extends Component {
     }
 
     loadNewRandomRecipes = () => {
-        this.fetchRandomRecipe();
+        // this.fetchRandomRecipe();
+        // console.log(this.props.meals)
+        this.props.fetchMeals();
+        // console.log(this.props.meals)
     }
 
     loadRecipeAccordingToFilter = async () => {
@@ -96,54 +99,61 @@ export default class RecipeContainer extends Component {
     }
 
     componentDidMount() {
-        console.log('component did mount');
-        this.fetchRandomRecipe();
-        const existingFavList = fetchFromLocalStorage();
-        this.updateFavListOnMount(existingFavList);
-
+        // console.log('component did mount');
+        // this.fetchRandomRecipe();
+        this.props.fetchMeals();
     }
-
+    
     componentDidUpdate(prevProps, prevState) {
         if (this.props.searchedRecipe && this.props.searchedRecipe !== prevProps.searchedRecipe) {
             console.log('changed')
             this.loadSearchedRecipe(this.props.searchedRecipe);
         }
         if (prevState.filter !== this.state.filter) this.loadRecipeAccordingToFilter();
+        // if (this.props.meals.length !== 0) this.setState({loading: false});
     }
 
     render() {
-        const {recipes, lookup, loading, favourites} = this.state;
+        const { lookup, loading } = this.state;
+        const { favList, meals } = this.props;
+        console.log(meals)
 
-        console.log(this.state.filter);
+        // console.log(this.state.filter);
         
         return (
             <div id="recipe-container">
                 <div className="fav-container">
-                    {favourites?.map((e,i) => <FavCard key={i} removeFav={this.removeFavRecipe} {...e} />)}
+                    {favList?.map((e,i) => <FavCard key={i} removeFav={this.removeFavRecipe} {...e} />)}
                 </div>
                 <div id="filter-controls">
                     <FilterDropdown currFilter={this.state.filter} isLoading={loading} onFilterUpdate={this.updateFilter} />
-                    <button id="load-rec-btn" onClick={this.loadNewRandomRecipes} disabled={loading} >Load New Recipes</button>
-                    {/* <button onClick={this.loadRecipeAccordingToFilter}>Filter</button> */}
+                    <button id="load-rec-btn" onClick={this.loadNewRandomRecipes} >Load New Recipes</button>
                 </div>
                     {   
-                    loading ? <div id="loading-div"><div className="spinner"></div> Loading....</div> 
-                    : 
-                    recipes ? 
+                    // loading ? <div id="loading-div"><div className="spinner"></div> Loading....</div> 
+                    // : 
+                    meals.meals.length!== 0 ? 
                     <ul id="recipe-grid-container">
-                        {recipes.map((recipe, index) => 
+                        {meals.meals.map( recipe => 
                         <RecipeCard 
-                            isFav={favourites.some(a => a.id === recipe.idMeal)}
-                            // id={recipe.idMeal}
+                            isFav={favList.some(a => a.id === recipe.idMeal)}
                             handleModal={this.lookupForRecipe}
                             toggleFav={this.AddFavRecipe} 
-                            key={index}
+                            key={recipe.idMeal}
                             {...recipe}
-                            // name={recipe.strMeal}
-                            // imgLink={recipe.strMealThumb} 
                         />)}
-                        {/* <hgdhgj></hgdhgj> */}
                     </ul>
+                    // recipes ? 
+                    // <ul id="recipe-grid-container">
+                    //     {recipes.map((recipe, index) => 
+                    //     <RecipeCard 
+                    //         isFav={favList.some(a => a.id === recipe.idMeal)}
+                    //         handleModal={this.lookupForRecipe}
+                    //         toggleFav={this.AddFavRecipe} 
+                    //         key={index}
+                    //         {...recipe}
+                    //     />)}
+                    // </ul>
                     :
                     <div id="not-found">No recipes found</div>
                     }
@@ -153,3 +163,6 @@ export default class RecipeContainer extends Component {
         )
     }
 }
+
+
+export default connect(mapStateToProps, mapDispatchToProps)(RecipeContainer);

@@ -34,8 +34,8 @@ export default class FilterDropdown extends Component {
         this.fetchRecipeFilters();
     }
 
-    shouldComponentUpdate(nextProps) {
-        console.log(nextProps.currFilter, this.state.filter);
+    shouldComponentUpdate() {
+        // console.log(nextProps.currFilter, this.state.filter);
         return true;
     }
 
